@@ -1,0 +1,13 @@
+node_modules/
+.env
+.DS_Store
+/dist
+/coverage
+
+# Docker
+**/node_modules
+Dockerfile
+docker-compose.yml
+
+# Kubernetes local files
+.kube/

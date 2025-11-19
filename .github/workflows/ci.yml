@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install
+        run: |
+          cd app
+          npm ci
+
+      - name: Run tests
+        run: |
+          # placeholder for tests
+          echo "No tests configured"
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          push: false # set true to push
+          tags: ${{ secrets.DOCKER_REGISTRY }}/devops-demo-app:${{ github.sha }}
