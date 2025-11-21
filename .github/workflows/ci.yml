@@ -11,65 +11,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # -----------------------------
-      # 1. Checkout Code
-      # -----------------------------
+
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # -----------------------------
-      # 2. Debug folder structure (IMPORTANT)
-      # -----------------------------
-      - name: Show directory structure
-        run: |
-          echo "Workspace path: $GITHUB_WORKSPACE"
-          ls -R $GITHUB_WORKSPACE
-
-      # -----------------------------
-      # 3. Set up Node.js
-      # -----------------------------
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: '18'
 
-      # -----------------------------
-      # 4. Install dependencies
-      # -----------------------------
       - name: Install dependencies
         run: |
           cd app
           npm install
 
-      # -----------------------------
-      # 5. Login to Docker Hub
-      # -----------------------------
+      - name: Run tests
+        run: |
+          echo "No tests configured"
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # -----------------------------
-      # 6. Build Docker Image
-      # -----------------------------
       - name: Build Docker image
         run: |
-          docker build \
-            -t ${{ secrets.DOCKER_USERNAME }}/firstrepo:latest \
-            -f $GITHUB_WORKSPACE/app/Dockerfile \
-            $GITHUB_WORKSPACE/app
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/firstrepo:latest \
+            -f app/Dockerfile app/
 
-      # -----------------------------
-      # 7. Push Docker Image
-      # -----------------------------
-      - name: Push Docker image
+      - name: Push Docker image to Docker Hub
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/firstrepo:latest
 
-      # -----------------------------
-      # 8. Configure AWS credentials
-      # -----------------------------
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -77,18 +51,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # -----------------------------
-      # 9. Update kubeconfig
-      # -----------------------------
-      - name: Update kubeconfig for EKS
+      - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig \
             --region ${{ secrets.AWS_REGION }} \
             --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      # -----------------------------
-      # 10. Deploy to EKS
-      # -----------------------------
       - name: Deploy to EKS
         run: |
           kubectl apply -f k8s/
